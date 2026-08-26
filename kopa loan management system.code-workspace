@@ -1,0 +1,18 @@
+{
+  "folders": [
+    {
+      "name": "kopa-web (Frontend)",
+      "path": "."
+    },
+    {
+      "name": "kopa-api (Backend)",
+      "path": "../../apis/kopa-api"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/vendor": true
+    }
+  }
+}
