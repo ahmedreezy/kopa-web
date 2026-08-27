@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
 import {
-  PhAddressBook, PhBank, PhBell, PhCaretDown, PhChartBar, PhGear, PhHouse,
+  PhAddressBook, PhBank, PhCaretDown, PhChartBar, PhGear, PhHouse,
   PhList, PhMagnifyingGlass, PhMoney, PhPlus, PhSignOut, PhUsers, PhX,
 } from '@phosphor-icons/vue'
 
@@ -98,7 +98,6 @@ onMounted(() => auth.refreshUser().catch(() => {}))
           </div>
         </div>
         <RouterLink to="/loans/new" class="btn-primary hidden sm:inline-flex"><PhPlus :size="17" />New loan</RouterLink>
-        <button class="icon-button hidden sm:grid" aria-label="Notifications"><PhBell :size="19" /></button>
         <div class="account-menu">
           <button class="account-trigger" @click="accountOpen = !accountOpen">
             <span class="avatar">{{ initials }}</span>
