@@ -1,0 +1,5 @@
+<script setup>
+import { PhPlus as Plus } from '@phosphor-icons/vue'
+const staff = [['Ahmed Kato','Owner','Head Office','Active'],['Amina Nanyonga','Collector','Head Office','Active'],['David Kato','Loan Officer','Kawempe','Active'],['Grace Atim','Accountant','All branches','Active']]
+</script>
+<template><section class="surface overflow-hidden"><div class="flex items-center justify-between border-b border-stone-200 p-5"><div><h2 class="font-bold">Staff</h2><p class="mt-1 text-sm text-stone-500">4 active members · 2 branches</p></div><button class="btn-primary"><Plus :size="18"/>Add staff</button></div><div class="divide-y divide-stone-100"><div v-for="person in staff" :key="person[0]" class="grid gap-3 p-5 sm:grid-cols-[1fr_180px_180px_100px] sm:items-center"><div><p class="font-semibold">{{ person[0] }}</p><p class="text-sm text-stone-500 sm:hidden">{{ person[1] }}</p></div><span class="hidden text-sm sm:block">{{ person[1] }}</span><span class="text-sm text-stone-500">{{ person[2] }}</span><span class="text-sm font-semibold text-emerald-700">{{ person[3] }}</span></div></div></section></template>

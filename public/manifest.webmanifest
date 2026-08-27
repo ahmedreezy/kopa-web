@@ -1,0 +1,9 @@
+{
+  "name": "Kopa Loan Management",
+  "short_name": "Kopa",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7f5",
+  "theme_color": "#143b31",
+  "description": "Simple loan tracking for Ugandan lending teams"
+}

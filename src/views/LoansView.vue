@@ -1,0 +1,6 @@
+<script setup>
+import { PhPlus as Plus } from '@phosphor-icons/vue'
+import StatusBadge from '../components/StatusBadge.vue'
+import { borrowers, money } from '../data/demo'
+</script>
+<template><section class="surface overflow-hidden"><div class="flex items-center justify-between border-b border-stone-200 p-5"><div><h2 class="font-bold">All loans</h2><p class="mt-1 text-sm text-stone-500">38 active, 14 completed</p></div><RouterLink to="/loans/new" class="btn-primary"><Plus :size="19"/>New loan</RouterLink></div><div class="overflow-x-auto"><table class="w-full min-w-[720px] text-left text-sm"><thead class="bg-stone-50 text-xs uppercase tracking-wide text-stone-500"><tr><th class="px-6 py-3">Loan</th><th class="px-4 py-3">Borrower</th><th class="px-4 py-3">Outstanding</th><th class="px-4 py-3">Next due</th><th class="px-6 py-3">Status</th></tr></thead><tbody class="divide-y divide-stone-100"><tr v-for="item in borrowers" :key="item.id"><td class="px-6 py-4 font-semibold">{{ item.loan }}</td><td class="px-4 py-4">{{ item.name }}</td><td class="px-4 py-4 font-semibold">{{ money(item.outstanding) }}</td><td class="px-4 py-4">{{ item.nextDue }}</td><td class="px-6 py-4"><StatusBadge :status="item.status === 'Completed' ? 'Completed' : 'Active'"/></td></tr></tbody></table></div></section></template>
