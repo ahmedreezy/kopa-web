@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
@@ -19,16 +19,18 @@ const results = ref(null)
 let searchTimer
 
 const nav = [
-  { label: 'Dashboard', to: '/', icon: PhHouse },
-  { label: 'Borrowers', to: '/borrowers', icon: PhAddressBook },
-  { label: 'Loans', to: '/loans', icon: PhBank },
-  { label: 'Collections', to: '/collections', icon: PhMoney },
-  { label: 'Reports', to: '/reports', icon: PhChartBar },
-  { label: 'Staff & branches', to: '/staff', icon: PhUsers },
-  { label: 'Settings', to: '/settings', icon: PhGear },
+  { label: 'Dashboard', to: '/', section: 'dashboard', icon: PhHouse },
+  { label: 'Borrowers', to: '/borrowers', section: 'borrowers', icon: PhAddressBook },
+  { label: 'Loans', to: '/loans', section: 'loans', icon: PhBank },
+  { label: 'Collections', to: '/collections', section: 'collections', icon: PhMoney },
+  { label: 'Reports', to: '/reports', section: 'reports', icon: PhChartBar },
+  { label: 'Staff & branches', to: '/staff', section: 'staff', icon: PhUsers },
+  { label: 'Settings', to: '/settings', section: 'settings', icon: PhGear },
 ]
 const title = computed(() => route.meta.title || 'Kopa')
 const initials = computed(() => (auth.user?.name || 'K').split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase())
+const accountMenu = ref(null)
+const isNavActive = (item) => route.meta.navSection === item.section
 
 watch(search, (value) => {
   clearTimeout(searchTimer)
@@ -52,7 +54,10 @@ async function logout() {
   router.push('/login')
 }
 
-onMounted(() => auth.refreshUser().catch(() => {}))
+function onDocumentClick(event) { if (accountMenu.value && !accountMenu.value.contains(event.target)) accountOpen.value = false }
+function onEscape(event) { if (event.key === 'Escape') { accountOpen.value = false; drawerOpen.value = false } }
+onMounted(() => { auth.refreshUser().catch(() => {}); document.addEventListener('click', onDocumentClick); document.addEventListener('keydown', onEscape) })
+onBeforeUnmount(() => { document.removeEventListener('click', onDocumentClick); document.removeEventListener('keydown', onEscape) })
 </script>
 
 <template>
@@ -70,7 +75,7 @@ onMounted(() => auth.refreshUser().catch(() => {}))
       </div>
       <nav class="sidebar-nav" aria-label="Main navigation">
         <p class="nav-label">Workspace</p>
-        <RouterLink v-for="item in nav" :key="item.to" :to="item.to" class="nav-link" @click="drawerOpen = false">
+        <RouterLink v-for="item in nav" :key="item.to" :to="item.to" class="nav-link" :class="{ 'nav-link-active': isNavActive(item) }" @click="drawerOpen = false">
           <component :is="item.icon" :size="18" /><span>{{ item.label }}</span>
         </RouterLink>
       </nav>
@@ -97,9 +102,8 @@ onMounted(() => auth.refreshUser().catch(() => {}))
             <p v-if="!results.borrowers?.length && !results.loans?.length" class="search-empty">No matching records</p>
           </div>
         </div>
-        <RouterLink to="/loans/new" class="btn-primary hidden sm:inline-flex"><PhPlus :size="17" />New loan</RouterLink>
-        <div class="account-menu">
-          <button class="account-trigger" @click="accountOpen = !accountOpen">
+        <div ref="accountMenu" class="account-menu">
+          <button class="account-trigger" :aria-expanded="accountOpen" aria-haspopup="menu" @click.stop="accountOpen = !accountOpen">
             <span class="avatar">{{ initials }}</span>
             <span class="hidden text-left md:block"><strong>{{ auth.user?.name }}</strong><small>{{ auth.user?.role?.replace('_', ' ') }}</small></span>
             <PhCaretDown :size="14" />
@@ -112,7 +116,7 @@ onMounted(() => auth.refreshUser().catch(() => {}))
         </div>
       </header>
       <main id="main-content" class="main-content" tabindex="-1">
-        <div class="page-heading"><div><p class="breadcrumb">{{ auth.tenant?.name || 'Kopa' }}</p><h1 class="page-title">{{ title }}</h1></div></div>
+        <div class="page-heading"><div><p class="breadcrumb">{{ auth.tenant?.name || 'Kopa' }}</p><h1 class="page-title">{{ title }}</h1></div><RouterLink v-if="route.name === 'loans'" to="/loans/new" class="btn-primary"><PhPlus :size="17"/>New loan</RouterLink></div>
         <RouterView />
       </main>
     </div>

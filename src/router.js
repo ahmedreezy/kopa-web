@@ -5,6 +5,7 @@ import RegisterView from './views/RegisterView.vue'
 import DashboardView from './views/DashboardView.vue'
 import BorrowersView from './views/BorrowersView.vue'
 import BorrowerView from './views/BorrowerView.vue'
+import BorrowerFormView from './views/BorrowerFormView.vue'
 import LoansView from './views/LoansView.vue'
 import CreateLoanView from './views/CreateLoanView.vue'
 import CollectionsView from './views/CollectionsView.vue'
@@ -12,6 +13,7 @@ import ReportsView from './views/ReportsView.vue'
 import TeamView from './views/TeamView.vue'
 import SettingsView from './views/SettingsView.vue'
 import LoanView from './views/LoanView.vue'
+import ReceiptView from './views/ReceiptView.vue'
 
 const routes = [
   { path: '/login', name: 'login', component: LoginView, meta: { guest: true } },
@@ -19,16 +21,19 @@ const routes = [
   {
     path: '/', component: AppShell,
     children: [
-      { path: '', name: 'dashboard', component: DashboardView, meta: { title: 'Dashboard' } },
-      { path: 'borrowers', name: 'borrowers', component: BorrowersView, meta: { title: 'Borrowers' } },
-      { path: 'borrowers/:id', name: 'borrower', component: BorrowerView, meta: { title: 'Borrower profile' } },
-      { path: 'loans', name: 'loans', component: LoansView, meta: { title: 'Loans' } },
-      { path: 'loans/new', name: 'create-loan', component: CreateLoanView, meta: { title: 'New loan' } },
-      { path: 'loans/:id', name: 'loan', component: LoanView, meta: { title: 'Loan account' } },
-      { path: 'collections', name: 'collections', component: CollectionsView, meta: { title: 'Collections' } },
-      { path: 'reports', name: 'reports', component: ReportsView, meta: { title: 'Reports' } },
-      { path: 'staff', name: 'staff', component: TeamView, meta: { title: 'Staff & branches' } },
-      { path: 'settings', name: 'settings', component: SettingsView, meta: { title: 'Settings' } },
+      { path: '', name: 'dashboard', component: DashboardView, meta: { title: 'Dashboard', navSection: 'dashboard' } },
+      { path: 'borrowers', name: 'borrowers', component: BorrowersView, meta: { title: 'Borrowers', navSection: 'borrowers' } },
+      { path: 'borrowers/new', name: 'create-borrower', component: BorrowerFormView, meta: { title: 'New borrower', navSection: 'borrowers' } },
+      { path: 'borrowers/:id/edit', name: 'edit-borrower', component: BorrowerFormView, meta: { title: 'Edit borrower', navSection: 'borrowers' } },
+      { path: 'borrowers/:id', name: 'borrower', component: BorrowerView, meta: { title: 'Borrower profile', navSection: 'borrowers' } },
+      { path: 'loans', name: 'loans', component: LoansView, meta: { title: 'Loans', navSection: 'loans' } },
+      { path: 'loans/new', name: 'create-loan', component: CreateLoanView, meta: { title: 'New loan', navSection: 'loans' } },
+      { path: 'loans/:id', name: 'loan', component: LoanView, meta: { title: 'Loan account', navSection: 'loans' } },
+      { path: 'receipts/:id', name: 'receipt', component: ReceiptView, meta: { title: 'Payment receipt', navSection: 'collections' } },
+      { path: 'collections', name: 'collections', component: CollectionsView, meta: { title: 'Collections', navSection: 'collections' } },
+      { path: 'reports', name: 'reports', component: ReportsView, meta: { title: 'Reports', navSection: 'reports' } },
+      { path: 'staff', name: 'staff', component: TeamView, meta: { title: 'Staff & branches', navSection: 'staff' } },
+      { path: 'settings', name: 'settings', component: SettingsView, meta: { title: 'Settings', navSection: 'settings' } },
     ],
   },
   { path: '/:pathMatch(.*)*', redirect: '/' },

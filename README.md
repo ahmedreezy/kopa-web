@@ -6,6 +6,7 @@ Vue 3 frontend powered by Vite, Tailwind CSS, Vue Router, Pinia, and Axios.
 
 ```sh
 npm install
+cp .env.example .env
 npm run dev
 ```
 
