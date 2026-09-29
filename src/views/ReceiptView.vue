@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { PhArrowLeft, PhPrinter, PhSealCheck, PhWarningCircle } from '@phosphor-icons/vue'
 import { dateTime, money } from '../utils/formatters'
+import KopaLogo from '../components/KopaLogo.vue'
 import api from '../services/api'
 
 const route = useRoute(); const receipt = ref(null); const loading = ref(true); const error = ref('')
@@ -18,7 +19,7 @@ onMounted(load)
     <p v-else-if="error" class="form-error">{{ error }}</p>
     <article v-else class="receipt-paper">
       <div v-if="receipt.status === 'reversed'" class="reversal-banner"><PhWarningCircle :size="20"/><strong>REVERSED RECEIPT</strong><span>This original receipt is retained for audit. Reversed {{ dateTime(receipt.reversed_at) }}.</span></div>
-      <header class="receipt-header"><div class="receipt-brand"><span>K</span><div><h2>{{ receipt.snapshot?.company?.name || 'Kopa' }}</h2><p>{{ receipt.snapshot?.company?.address }}</p><p>{{ [receipt.snapshot?.company?.phone, receipt.snapshot?.company?.email].filter(Boolean).join(' · ') }}</p></div></div><div class="receipt-number"><p>Official payment receipt</p><strong>{{ receipt.receipt_number }}</strong><small>Issued {{ dateTime(receipt.issued_at) }}</small></div></header>
+      <header class="receipt-header"><div class="receipt-brand"><KopaLogo :size="44"/><div><h2>{{ receipt.snapshot?.company?.name || 'Kopa' }}</h2><p>{{ receipt.snapshot?.company?.address }}</p><p>{{ [receipt.snapshot?.company?.phone, receipt.snapshot?.company?.email].filter(Boolean).join(' · ') }}</p></div></div><div class="receipt-number"><p>Official payment receipt</p><strong>{{ receipt.receipt_number }}</strong><small>Issued {{ dateTime(receipt.issued_at) }}</small></div></header>
       <section class="receipt-paid"><PhSealCheck :size="35"/><p>Amount received</p><strong>{{ money(receipt.amount_paid) }}</strong><span>Uganda Shillings</span></section>
       <dl class="receipt-details">
         <div><dt>Received from</dt><dd>{{ receipt.snapshot?.borrower?.name || receipt.loan?.borrower?.full_name }}</dd></div><div><dt>Borrower phone</dt><dd>{{ receipt.snapshot?.borrower?.phone || '—' }}</dd></div>

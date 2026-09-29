@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { PhArrowRight, PhBuildings, PhLockKey, PhUser } from '@phosphor-icons/vue'
+import KopaLogo from '../components/KopaLogo.vue'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
@@ -27,13 +28,13 @@ async function submit() {
   <main class="grid min-h-[100dvh] bg-[#f4f6f7] lg:grid-cols-[minmax(360px,44%)_1fr]">
     <section class="relative hidden overflow-hidden bg-[#173f3a] p-12 text-white lg:flex lg:flex-col lg:justify-between">
       <div class="absolute inset-0 opacity-[.08]" style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 32px 32px" />
-      <div class="relative flex items-center gap-3"><div class="grid size-11 place-items-center rounded-[8px] bg-white font-extrabold text-[#287f71]">K</div><div><strong class="block text-lg">Kopa</strong><span class="text-xs text-white/60">Loan Management</span></div></div>
+      <div class="relative flex items-center gap-3"><KopaLogo :size="44" inverse/><div><strong class="block text-lg">Kopa</strong><span class="text-xs text-white/60">Loan Management</span></div></div>
       <div class="relative max-w-sm border-l-2 border-[#62a99e] pl-6"><h1 class="text-3xl font-semibold leading-tight tracking-tight">Kiboga Capital</h1><dl class="mt-7 grid grid-cols-2 gap-6 text-sm"><div><dt class="text-white/55">Workspace</dt><dd class="mt-1 font-semibold">Head Office</dd></div><div><dt class="text-white/55">Currency</dt><dd class="mt-1 font-semibold">Uganda Shilling</dd></div></dl></div>
       <span />
     </section>
     <section class="grid place-items-center p-5 sm:p-10">
       <form class="w-full max-w-[430px] rounded-[10px] border border-[#e0e5e8] bg-white p-6 shadow-[0_12px_35px_rgba(31,42,55,.08)] sm:p-9" @submit.prevent="submit">
-        <div class="mb-7 flex items-center gap-3 lg:hidden"><div class="grid size-10 place-items-center rounded-[7px] bg-[#287f71] font-extrabold text-white">K</div><strong class="text-lg text-[#1d2939]">Kopa</strong></div>
+        <div class="mb-7 flex items-center gap-3 lg:hidden"><KopaLogo :size="40"/><strong class="text-lg text-[#1d2939]">Kopa</strong></div>
         <p class="text-xs font-bold uppercase tracking-[.08em] text-[#287f71]">Account access</p>
         <h2 class="mt-2 text-2xl font-semibold tracking-tight text-[#1d2939]">Sign in</h2>
         <p v-if="error" class="mt-5 border-l-4 border-red-500 bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">{{ error }}</p>

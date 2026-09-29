@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
+import KopaLogo from '../components/KopaLogo.vue'
 import {
   PhAddressBook, PhBank, PhCaretDown, PhChartBar, PhGear, PhHouse,
   PhList, PhMagnifyingGlass, PhMoney, PhPlus, PhSignOut, PhUsers, PhX,
@@ -66,7 +67,7 @@ onBeforeUnmount(() => { document.removeEventListener('click', onDocumentClick); 
     <div v-if="drawerOpen" class="sidebar-backdrop" @click="drawerOpen = false" />
     <aside class="sidebar" :class="drawerOpen ? 'sidebar-open' : ''">
       <div class="brand-bar">
-        <div class="brand-mark">K</div>
+        <KopaLogo :size="38"/>
         <div class="min-w-0">
           <p class="brand-name">Kopa</p>
           <p class="brand-company">{{ auth.tenant?.name || 'Loan management' }}</p>
