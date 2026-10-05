@@ -6,7 +6,7 @@ import api from '../services/api'
 import KopaLogo from '../components/KopaLogo.vue'
 import {
   PhAddressBook, PhBank, PhCaretDown, PhChartBar, PhGear, PhHouse,
-  PhList, PhMagnifyingGlass, PhMoney, PhPlus, PhSignOut, PhUsers, PhX,
+  PhList, PhMagnifyingGlass, PhMoney, PhPlus, PhSignOut, PhUsers,
 } from '@phosphor-icons/vue'
 
 const route = useRoute()
@@ -72,7 +72,6 @@ onBeforeUnmount(() => { document.removeEventListener('click', onDocumentClick); 
           <p class="brand-name">Kopa</p>
           <p class="brand-company">{{ auth.tenant?.name || 'Loan management' }}</p>
         </div>
-        <button class="icon-button ml-auto lg:hidden" aria-label="Close menu" @click="drawerOpen = false"><PhX :size="19" /></button>
       </div>
       <nav class="sidebar-nav" aria-label="Main navigation">
         <p class="nav-label">Workspace</p>

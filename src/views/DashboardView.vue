@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { PhArrowRight, PhPhone, PhPlus, PhWallet } from '@phosphor-icons/vue'
+import { PhArrowRight, PhCalendarCheck, PhChartLineUp, PhCoins, PhPhone, PhPlus, PhWarningCircle, PhWallet } from '@phosphor-icons/vue'
 import StatCard from '../components/StatCard.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import { money } from '../utils/formatters'
@@ -15,10 +15,10 @@ async function load() {
   try {
     const { data } = await api.get('/dashboard')
     metrics.value = [
-      { label: 'Outstanding', value: data.metrics.outstanding, detail: `${data.metrics.active_loans} active loans` },
-      { label: 'Due today', value: data.metrics.due_today, detail: `${data.metrics.due_today_count} installments`, tone: 'warning' },
-      { label: 'Overdue', value: data.metrics.overdue, detail: `${data.metrics.overdue_count} installments`, tone: 'danger' },
-      { label: 'Collected today', value: data.metrics.collected_today, detail: 'Posted repayments', tone: 'success' },
+      { label: 'Outstanding', value: data.metrics.outstanding, detail: `${data.metrics.active_loans} active loans`, icon: PhChartLineUp },
+      { label: 'Due today', value: data.metrics.due_today, detail: `${data.metrics.due_today_count} installments`, tone: 'warning', icon: PhCalendarCheck },
+      { label: 'Overdue', value: data.metrics.overdue, detail: `${data.metrics.overdue_count} installments`, tone: 'danger', icon: PhWarningCircle },
+      { label: 'Collected today', value: data.metrics.collected_today, detail: 'Posted repayments', tone: 'success', icon: PhCoins },
     ]
     attention.value = data.attention.map((item) => ({ id: item.id, loanId: item.loan_id, borrowerId: item.loan.borrower.id, name: item.loan.borrower.full_name, phone: item.loan.borrower.phone_number, loan: item.loan.loan_number, amount: item.amount_due - item.amount_paid, status: new Date(`${item.due_date}T23:59:59`) < new Date() ? 'Overdue' : 'Due Today' }))
   } catch (e) { error.value = e.response?.data?.message || 'Dashboard data could not be loaded.' }

@@ -9,6 +9,7 @@ const route = useRoute(); const router = useRouter()
 const editing = computed(() => Boolean(route.params.id))
 const step = ref(0); const loading = ref(true); const saving = ref(false); const error = ref(''); const branches = ref([]); const documents = ref([])
 const steps = ['Identity', 'Residence', 'Work & income', 'Next of kin', 'Documents & consent']
+const canPreviewSteps = import.meta.env.DEV
 const form = reactive({
   branch_id: '', borrower_type: 'individual', full_name: '', date_of_birth: '', phone_number: '', alternative_phone: '', email: '', id_type: 'national_id', nin: '',
   address: '', district: '', sub_county: '', parish: '', village: '', lc1_reference: '', occupation: '', employer_name: '', business_name: '', business_sector: '', tin: '', years_operating: '',
@@ -32,6 +33,11 @@ async function load() {
 }
 function next() { error.value = ''; step.value = Math.min(steps.length - 1, step.value + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }
 function previous() { step.value = Math.max(0, step.value - 1) }
+function previewStep(index) {
+  if (!canPreviewSteps) return
+  error.value = ''
+  step.value = index
+}
 async function save() {
   saving.value = true; error.value = ''
   try {
@@ -47,15 +53,15 @@ onMounted(load)
 <template>
   <div class="form-workspace">
     <RouterLink to="/borrowers" class="back-link"><PhArrowLeft :size="17"/>Borrowers</RouterLink>
-    <div class="step-rail" aria-label="Borrower application progress">
-      <div v-for="(item, index) in steps" :key="item" :class="['step-item', { active: step === index, complete: step > index }]">
+    <div class="step-rail" :style="{ '--step-count': steps.length }" aria-label="Borrower application progress">
+      <component :is="canPreviewSteps ? 'button' : 'div'" v-for="(item, index) in steps" :key="item" :type="canPreviewSteps ? 'button' : undefined" :class="['step-item', { active: step === index, complete: step > index, interactive: canPreviewSteps }]" @click="previewStep(index)">
         <span>{{ step > index ? '✓' : index + 1 }}</span><small>{{ item }}</small>
-      </div>
+      </component>
     </div>
     <section class="premium-panel">
       <header class="panel-heading"><div><p class="eyebrow">Borrower application</p><h2>{{ editing ? 'Update' : 'Create' }} borrower · {{ steps[step] }}</h2></div><span>{{ step + 1 }} / {{ steps.length }}</span></header>
       <div v-if="loading" class="skeleton-stack"><i/><i/><i/></div>
-      <form v-else @submit.prevent="step === steps.length - 1 ? save() : next()">
+      <form v-else :novalidate="canPreviewSteps" @submit.prevent="step === steps.length - 1 ? save() : next()">
         <p v-if="error" class="form-error">{{ error }}</p>
         <div v-if="step === 0" class="form-grid">
           <label><span class="label">Borrower type</span><select v-model="form.borrower_type" class="field"><option value="individual">Individual</option><option value="sole_trader">Sole trader / microbusiness</option></select></label>

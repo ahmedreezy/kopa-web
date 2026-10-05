@@ -10,6 +10,7 @@ const router = useRouter(); const route = useRoute()
 const step = ref(0); const borrowers = ref([]); const branches = ref([]); const products = ref([]); const documents = ref([]); const quote = ref(null)
 const loading = ref(true); const calculating = ref(false); const saving = ref(false); const error = ref('')
 const steps = ['Borrower', 'Product & terms', 'Security', 'Key facts']
+const canPreviewSteps = import.meta.env.DEV
 const today = new Date(); const first = new Date(); first.setDate(first.getDate() + 7)
 const iso = (value) => value.toISOString().slice(0, 10)
 const form = reactive({ loan_product_id: '', borrower_id: '', branch_id: '', principal_amount: 0, duration: 1, duration_unit: 'months', repayment_frequency: 'monthly', disbursement_date: iso(today), first_repayment_date: iso(first), purpose: '', source_of_repayment: '', declared_disposable_income: 0, guarantors: [], collateral: [], terms_confirmed: false })
@@ -58,9 +59,16 @@ async function calculate() {
   return true
 }
 async function next() {
-  error.value = validateStep(); if (error.value) return
-  if (step.value === 1 && !await calculate()) return
+  const validationError = validateStep()
+  if (!canPreviewSteps && validationError) { error.value = validationError; return }
+  error.value = ''
+  if (step.value === 1 && !validationError && !await calculate() && !canPreviewSteps) return
   step.value = Math.min(steps.length - 1, step.value + 1); window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+function previewStep(index) {
+  if (!canPreviewSteps) return
+  error.value = ''
+  step.value = index
 }
 async function createLoan() {
   if (!form.terms_confirmed) { error.value = 'Confirm that the Key Facts and agreement were reviewed with the borrower.'; return }
@@ -76,11 +84,15 @@ onMounted(load)
 <template>
   <div class="form-workspace">
     <RouterLink to="/loans" class="back-link"><PhArrowLeft :size="17"/>Loans</RouterLink>
-    <div class="step-rail" aria-label="Loan issuance progress"><div v-for="(item, index) in steps" :key="item" :class="['step-item', { active: step === index, complete: step > index }]"><span>{{ step > index ? '✓' : index + 1 }}</span><small>{{ item }}</small></div></div>
+    <div class="step-rail" aria-label="Loan issuance progress">
+      <component :is="canPreviewSteps ? 'button' : 'div'" v-for="(item, index) in steps" :key="item" :type="canPreviewSteps ? 'button' : undefined" :class="['step-item', { active: step === index, complete: step > index, interactive: canPreviewSteps }]" @click="previewStep(index)">
+        <span>{{ step > index ? '✓' : index + 1 }}</span><small>{{ item }}</small>
+      </component>
+    </div>
     <section class="premium-panel">
       <header class="panel-heading"><div><p class="eyebrow">Instant loan issuance</p><h2>{{ steps[step] }}</h2><p v-if="step === 3">Review the server-calculated terms before activation and disbursement.</p></div><span>{{ step + 1 }} / {{ steps.length }}</span></header>
       <div v-if="loading" class="skeleton-stack m-7"><i/><i/><i/></div>
-      <form v-else @submit.prevent="step === steps.length - 1 ? createLoan() : next()">
+      <form v-else :novalidate="canPreviewSteps" @submit.prevent="step === steps.length - 1 ? createLoan() : next()">
         <p v-if="error" class="form-error">{{ error }}</p>
         <div v-if="step === 0" class="form-grid">
           <label class="wide"><span class="label">Registered borrower</span><select v-model="form.borrower_id" class="field" required @change="selectBorrower"><option value="" disabled>Select borrower</option><option v-for="person in borrowers" :key="person.id" :value="person.id">{{ person.full_name }} · {{ person.phone_number }}</option></select></label>
