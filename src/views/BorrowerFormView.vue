@@ -11,11 +11,17 @@ const step = ref(0); const loading = ref(true); const saving = ref(false); const
 const steps = ['Identity', 'Residence', 'Work & income', 'Next of kin', 'Documents & consent']
 const canPreviewSteps = import.meta.env.DEV
 const form = reactive({
-  branch_id: '', borrower_type: 'individual', full_name: '', date_of_birth: '', phone_number: '', alternative_phone: '', email: '', id_type: 'national_id', nin: '',
-  address: '', district: '', sub_county: '', parish: '', village: '', lc1_reference: '', occupation: '', employer_name: '', business_name: '', business_sector: '', tin: '', years_operating: '',
-  monthly_income: 0, monthly_expenses: 0, disposable_income: 0, repayment_source: '', next_of_kin: '', next_of_kin_relationship: '', next_of_kin_phone: '', next_of_kin_alternative_phone: '', next_of_kin_address: '', notes: '', consent_confirmed: false,
+  branch_id: '', borrower_type: 'individual', full_name: '', date_of_birth: '', phone_number: '', email: '', id_type: 'national_id', nin: '',
+  address: '', district: '', sub_county: '', parish: '', village: '', lc1_reference: '', occupation: '', organization_name: '',
+  average_monthly_income: 0, repayment_source: '', next_of_kin: '', next_of_kin_relationship: '', next_of_kin_phone: '', next_of_kin_address: '', notes: '', consent_confirmed: false,
 })
 const maxBirthDate = computed(() => { const date = new Date(); date.setFullYear(date.getFullYear() - 18); return date.toISOString().slice(0, 10) })
+const requiredIdentityCategories = computed(() => ({
+  national_id: ['national_id_front', 'national_id_back'],
+  refugee_id: ['refugee_id_front', 'refugee_id_back'],
+  passport: ['passport'],
+}[form.id_type] || []))
+const identityDocumentsComplete = computed(() => requiredIdentityCategories.value.every((category) => documents.value.some((document) => document.category === category)))
 
 async function load() {
   try {
@@ -39,9 +45,10 @@ function previewStep(index) {
   step.value = index
 }
 async function save() {
+  if (!identityDocumentsComplete.value) { error.value = 'Upload all required identification files before saving the borrower.'; return }
   saving.value = true; error.value = ''
   try {
-    const payload = { ...form, document_ids: documents.value.map((item) => item.id), years_operating: form.years_operating === '' ? null : Number(form.years_operating) }
+    const payload = { ...form, document_ids: documents.value.map((item) => item.id) }
     const { data } = editing.value ? await api.put(`/borrowers/${route.params.id}`, payload) : await api.post('/borrowers', payload)
     router.push(`/borrowers/${data.id}`)
   } catch (e) { error.value = Object.values(e.response?.data?.errors || {})[0]?.[0] || e.response?.data?.message || 'The borrower could not be saved.' }
@@ -69,8 +76,7 @@ onMounted(load)
           <label class="wide"><span class="label">Full legal name</span><input v-model.trim="form.full_name" class="field" required/></label>
           <label><span class="label">Date of birth</span><input v-model="form.date_of_birth" type="date" :max="maxBirthDate" class="field" required/></label>
           <label><span class="label">Primary phone</span><input v-model.trim="form.phone_number" class="field" placeholder="07…" required/></label>
-          <label><span class="label">Alternative phone</span><input v-model.trim="form.alternative_phone" class="field"/></label>
-          <label><span class="label">Email</span><input v-model.trim="form.email" type="email" class="field"/></label>
+          <label><span class="label">Email (optional)</span><input v-model.trim="form.email" type="email" class="field"/></label>
           <label><span class="label">Identification type</span><select v-model="form.id_type" class="field"><option value="national_id">Uganda National ID</option><option value="passport">Passport</option><option value="refugee_id">Refugee ID</option></select></label>
           <label><span class="label">NIN / document number</span><input v-model.trim="form.nin" class="field uppercase" required/></label>
         </div>
@@ -80,18 +86,12 @@ onMounted(load)
           <label><span class="label">Sub-county</span><input v-model.trim="form.sub_county" class="field"/></label>
           <label><span class="label">Parish</span><input v-model.trim="form.parish" class="field"/></label>
           <label><span class="label">Village</span><input v-model.trim="form.village" class="field"/></label>
-          <label class="wide"><span class="label">LC1 reference or recommendation</span><input v-model.trim="form.lc1_reference" class="field"/></label>
+          <label class="wide"><span class="label">LC1 reference or recommendation (optional)</span><input v-model.trim="form.lc1_reference" class="field"/></label>
         </div>
         <div v-else-if="step === 2" class="form-grid">
           <label><span class="label">Occupation</span><input v-model.trim="form.occupation" class="field" required/></label>
-          <label><span class="label">Employer</span><input v-model.trim="form.employer_name" class="field"/></label>
-          <label><span class="label">Business name</span><input v-model.trim="form.business_name" class="field"/></label>
-          <label><span class="label">Business sector</span><input v-model.trim="form.business_sector" class="field"/></label>
-          <label><span class="label">TIN</span><input v-model.trim="form.tin" class="field"/></label>
-          <label><span class="label">Years operating</span><input v-model="form.years_operating" type="number" min="0" max="100" class="field"/></label>
-          <label><span class="label">Monthly income / revenue (UGX)</span><input v-model.number="form.monthly_income" type="number" min="0" class="field" required/></label>
-          <label><span class="label">Monthly expenses (UGX)</span><input v-model.number="form.monthly_expenses" type="number" min="0" class="field" required/></label>
-          <label><span class="label">Disposable income (UGX)</span><input v-model.number="form.disposable_income" type="number" min="0" class="field" required/></label>
+          <label><span class="label">Organization / company (optional)</span><input v-model.trim="form.organization_name" class="field"/></label>
+          <label><span class="label">Average monthly income (UGX)</span><input v-model.number="form.average_monthly_income" type="number" min="0" class="field" required/></label>
           <label class="wide"><span class="label">Expected source of repayments</span><textarea v-model.trim="form.repayment_source" class="field min-h-24 py-3" required/></label>
         </div>
         <div v-else-if="step === 3" class="form-grid">
@@ -99,15 +99,14 @@ onMounted(load)
           <label><span class="label">Full name</span><input v-model.trim="form.next_of_kin" class="field" required/></label>
           <label><span class="label">Relationship</span><input v-model.trim="form.next_of_kin_relationship" class="field" required/></label>
           <label><span class="label">Primary phone</span><input v-model.trim="form.next_of_kin_phone" class="field" required/></label>
-          <label><span class="label">Alternative phone</span><input v-model.trim="form.next_of_kin_alternative_phone" class="field"/></label>
           <label class="wide"><span class="label">Address</span><input v-model.trim="form.next_of_kin_address" class="field"/></label>
         </div>
         <div v-else class="space-y-6">
-          <DocumentUploader v-model="documents"/>
+          <DocumentUploader v-model="documents" :identity-type="form.id_type"/>
           <label class="consent-box"><input v-model="form.consent_confirmed" type="checkbox" required/><span><strong>Borrower consent recorded</strong><small>I confirm that the borrower was informed why identity, financial and contact data is collected and consented to its use for credit assessment and loan servicing.</small></span></label>
           <label><span class="label">Internal notes</span><textarea v-model.trim="form.notes" class="field min-h-24 py-3"/></label>
         </div>
-        <footer class="form-actions"><button v-if="step" type="button" class="btn-secondary" @click="previous">Back</button><span class="flex-1"/><button class="btn-primary" :disabled="saving"><template v-if="step < steps.length - 1">Continue <PhArrowRight :size="17"/></template><template v-else>{{ saving ? 'Saving application' : 'Save borrower' }} <PhCheck :size="17"/></template></button></footer>
+        <footer class="form-actions"><button v-if="step" type="button" class="btn-secondary" @click="previous">Back</button><span class="flex-1"/><button class="btn-primary" :disabled="saving || (step === steps.length - 1 && !identityDocumentsComplete)"><template v-if="step < steps.length - 1">Continue <PhArrowRight :size="17"/></template><template v-else>{{ saving ? 'Saving application' : 'Save borrower' }} <PhCheck :size="17"/></template></button></footer>
       </form>
     </section>
   </div>

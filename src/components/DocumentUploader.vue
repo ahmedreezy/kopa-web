@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import Uppy from '@uppy/core'
 import Webcam from '@uppy/webcam'
 import Dashboard from '@uppy/vue/dashboard'
@@ -8,21 +8,33 @@ import '@uppy/dashboard/css/style.min.css'
 import '@uppy/webcam/css/style.min.css'
 import api from '../services/api'
 
-const props = defineProps({ modelValue: { type: Array, default: () => [] } })
+const props = defineProps({
+  modelValue: { type: Array, default: () => [] },
+  identityType: { type: String, default: '' },
+})
 const emit = defineEmits(['update:modelValue'])
-const category = ref('national_id_front')
+const category = ref('borrower_photo')
 const uploading = ref(false)
 const error = ref('')
 const pendingCount = ref(0)
-const uploaded = computed(() => props.modelValue)
-const categories = [
-  ['national_id_front', 'National ID — front'], ['national_id_back', 'National ID — back'],
+const genericCategories = [
   ['borrower_photo', 'Borrower photograph'], ['proof_of_residence', 'Proof of residence'],
   ['lc1_letter', 'LC1 letter'], ['income_evidence', 'Income evidence'],
   ['business_evidence', 'Business evidence'], ['bank_statement', 'Bank statement'],
   ['mobile_money_statement', 'Mobile money statement'], ['security_evidence', 'Security evidence'],
 ]
-const labelFor = (value) => categories.find(([key]) => key === value)?.[1] || value.replaceAll('_', ' ')
+const identityCategoryMap = {
+  national_id: [['national_id_front', 'National ID — front'], ['national_id_back', 'National ID — back']],
+  refugee_id: [['refugee_id_front', 'Refugee ID — front'], ['refugee_id_back', 'Refugee ID — back']],
+  passport: [['passport', 'Passport photo / data page']],
+}
+const allCategories = [...genericCategories, ...identityCategoryMap.national_id, ...identityCategoryMap.refugee_id, ...identityCategoryMap.passport]
+const categories = computed(() => props.identityType ? identityCategoryMap[props.identityType] || [] : genericCategories)
+const uploaded = computed(() => props.identityType
+  ? props.modelValue.filter((document) => categories.value.some(([key]) => key === document.category))
+  : props.modelValue)
+const labelFor = (value) => allCategories.find(([key]) => key === value)?.[1] || value.replaceAll('_', ' ')
+const hasCategory = (value) => uploaded.value.some((document) => document.category === value)
 const uppy = new Uppy({
   id: `kopa-documents-${Math.random().toString(36).slice(2)}`,
   autoProceed: false,
@@ -30,6 +42,10 @@ const uppy = new Uppy({
 }).use(Webcam, { modes: ['picture'], mirror: false })
 uppy.on('file-added', (file) => { uppy.setFileMeta(file.id, { category: category.value }); pendingCount.value = uppy.getFiles().length })
 uppy.on('file-removed', () => { pendingCount.value = uppy.getFiles().length })
+watch(() => props.identityType, () => {
+  uppy.cancelAll()
+  category.value = categories.value[0]?.[0] || 'borrower_photo'
+}, { immediate: true })
 
 async function upload() {
   const pending = uppy.getFiles()
@@ -74,8 +90,11 @@ onBeforeUnmount(() => uppy.destroy())
 <template>
   <section class="upload-studio">
     <div class="upload-toolbar">
-      <label><span class="label">Document category</span><select v-model="category" class="field"><option v-for="item in categories" :key="item[0]" :value="item[0]">{{ item[1] }}</option></select></label>
-      <p>Choose the category before selecting files. Photos can be taken from the device camera.</p>
+      <label v-if="!identityType"><span class="label">Document category</span><select v-model="category" class="field"><option v-for="item in categories" :key="item[0]" :value="item[0]">{{ item[1] }}</option></select></label>
+      <div v-else class="flex flex-wrap gap-2">
+        <button v-for="item in categories" :key="item[0]" type="button" :class="category === item[0] ? 'btn-primary' : 'btn-secondary'" @click="category = item[0]">{{ hasCategory(item[0]) ? '✓ ' : '' }}{{ item[1] }}</button>
+      </div>
+      <p>{{ identityType ? `Select the required ${categories.length > 1 ? 'side' : 'passport page'}, then add its file or take a photo.` : 'Choose the category before selecting files. Photos can be taken from the device camera.' }}</p>
     </div>
     <Dashboard :uppy="uppy" :props="{ height: 300, proudlyDisplayPoweredByUppy: false, hideUploadButton: true, plugins: ['Webcam'], note: 'JPG, PNG, WebP or PDF · 10 MB maximum' }" />
     <p v-if="error" class="form-error">{{ error }}</p>

@@ -35,13 +35,13 @@ async function load() {
     borrowers.value = borrowerResponse.data.data; branches.value = branchResponse.data; products.value = productResponse.data.data.filter((item) => item.is_active)
     form.borrower_id = borrowers.value.find((item) => item.id === route.query.borrower)?.id || borrowers.value[0]?.id || ''
     form.branch_id = selectedBorrower.value?.branch_id || branches.value[0]?.id || ''
-    form.declared_disposable_income = Number(selectedBorrower.value?.disposable_income || 0)
+    form.declared_disposable_income = 0
     form.source_of_repayment = selectedBorrower.value?.repayment_source || ''
     form.loan_product_id = products.value[0]?.id || ''; applyProduct()
   } catch (e) { error.value = e.response?.data?.message || 'Loan form data could not be loaded.' }
   finally { loading.value = false }
 }
-function selectBorrower() { form.branch_id = selectedBorrower.value?.branch_id || form.branch_id; form.declared_disposable_income = Number(selectedBorrower.value?.disposable_income || 0); form.source_of_repayment = selectedBorrower.value?.repayment_source || '' }
+function selectBorrower() { form.branch_id = selectedBorrower.value?.branch_id || form.branch_id; form.declared_disposable_income = 0; form.source_of_repayment = selectedBorrower.value?.repayment_source || '' }
 function validateStep() {
   if (step.value === 0 && !form.borrower_id) return 'Select a borrower before continuing.'
   if (step.value === 1 && (!form.loan_product_id || !form.principal_amount || !form.duration || !form.purpose || !form.source_of_repayment)) return 'Complete the product, affordability, and loan-purpose details.'
@@ -96,7 +96,7 @@ onMounted(load)
         <p v-if="error" class="form-error">{{ error }}</p>
         <div v-if="step === 0" class="form-grid">
           <label class="wide"><span class="label">Registered borrower</span><select v-model="form.borrower_id" class="field" required @change="selectBorrower"><option value="" disabled>Select borrower</option><option v-for="person in borrowers" :key="person.id" :value="person.id">{{ person.full_name }} · {{ person.phone_number }}</option></select></label>
-          <article v-if="selectedBorrower" class="wide borrower-summary"><div><span class="avatar">{{ selectedBorrower.full_name.charAt(0) }}</span><p><strong>{{ selectedBorrower.full_name }}</strong><small>{{ selectedBorrower.nin || 'Identity number not available' }} · {{ selectedBorrower.district || 'District not set' }}</small></p></div><dl><div><dt>Monthly income</dt><dd>{{ money(selectedBorrower.monthly_income) }}</dd></div><div><dt>Disposable income</dt><dd>{{ money(selectedBorrower.disposable_income) }}</dd></div></dl></article>
+          <article v-if="selectedBorrower" class="wide borrower-summary"><div><span class="avatar">{{ selectedBorrower.full_name.charAt(0) }}</span><p><strong>{{ selectedBorrower.full_name }}</strong><small>{{ selectedBorrower.nin || 'Identity number not available' }} · {{ selectedBorrower.district || 'District not set' }}</small></p></div><dl><div><dt>Average monthly income</dt><dd>{{ money(selectedBorrower.average_monthly_income) }}</dd></div><div><dt>Organization / company</dt><dd>{{ selectedBorrower.organization_name || '—' }}</dd></div></dl></article>
           <RouterLink to="/borrowers/new" class="btn-secondary w-fit"><PhPlus :size="17"/>Register a borrower</RouterLink>
         </div>
         <div v-else-if="step === 1" class="space-y-6">
