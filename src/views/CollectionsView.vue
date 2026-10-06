@@ -4,9 +4,11 @@ import { useRoute } from 'vue-router'
 import { PhCheckCircle, PhPhone } from '@phosphor-icons/vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import { date, money } from '../utils/formatters'
+import { useAuthStore } from '../stores/auth'
 import api from '../services/api'
 
 const route = useRoute()
+const auth = useAuthStore()
 const activeTab = ref(
   route.query.view === 'overdue'
     ? 'Overdue'
@@ -179,7 +181,7 @@ watch(activeTab, () => {
                     <PhPhone :size="15" />Call
                   </a>
                   <button
-                    v-if="activeTab !== 'Upcoming'"
+                    v-if="activeTab !== 'Upcoming' && auth.can('repayments.create')"
                     class="btn-primary !min-h-8 !px-2.5 !text-xs"
                     :disabled="collectingId === item.id"
                     @click="collect(item)"
@@ -188,7 +190,7 @@ watch(activeTab, () => {
                     {{ collectingId === item.id ? 'Collecting' : 'Mark collected' }}
                   </button>
                   <span v-else class="inline-flex items-center px-2.5 text-xs font-semibold text-[#7d8796]">
-                    Wait until due
+                    {{ activeTab === 'Upcoming' ? 'Wait until due' : 'View only' }}
                   </span>
                 </div>
               </td>

@@ -1,11 +1,14 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import api from '../services/api'
+import { userCan, userCanAny } from '../utils/permissions'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(JSON.parse(localStorage.getItem('kopa_user') || 'null'))
   const tenant = ref(JSON.parse(localStorage.getItem('kopa_company') || 'null'))
   const authenticated = computed(() => Boolean(localStorage.getItem('kopa_token')))
+  const can = (permission) => userCan(user.value, permission)
+  const canAny = (permissions) => userCanAny(user.value, permissions)
 
   function remember(payload) {
     localStorage.setItem('kopa_token', payload.token)
@@ -43,5 +46,5 @@ export const useAuthStore = defineStore('auth', () => {
     try { await api.post('/auth/logout') } finally { clear() }
   }
 
-  return { user, tenant, authenticated, signIn, register, refreshUser, signOut, clear }
+  return { user, tenant, authenticated, can, canAny, signIn, register, refreshUser, signOut, clear }
 })

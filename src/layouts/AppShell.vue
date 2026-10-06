@@ -19,15 +19,15 @@ const searching = ref(false)
 const results = ref(null)
 let searchTimer
 
-const nav = [
-  { label: 'Dashboard', to: '/', section: 'dashboard', icon: PhHouse },
-  { label: 'Borrowers', to: '/borrowers', section: 'borrowers', icon: PhAddressBook },
-  { label: 'Loans', to: '/loans', section: 'loans', icon: PhBank },
-  { label: 'Collections', to: '/collections', section: 'collections', icon: PhMoney },
-  { label: 'Reports', to: '/reports', section: 'reports', icon: PhChartBar },
-  { label: 'Staff & branches', to: '/staff', section: 'staff', icon: PhUsers },
-  { label: 'Settings', to: '/settings', section: 'settings', icon: PhGear },
-]
+const nav = computed(() => [
+  { label: 'Dashboard', to: '/', section: 'dashboard', icon: PhHouse, permission: 'dashboard.view' },
+  { label: 'Borrowers', to: '/borrowers', section: 'borrowers', icon: PhAddressBook, permission: 'borrowers.view' },
+  { label: 'Loans', to: '/loans', section: 'loans', icon: PhBank, permission: 'loans.view' },
+  { label: 'Collections', to: '/collections', section: 'collections', icon: PhMoney, permission: 'collections.view' },
+  { label: 'Reports', to: '/reports', section: 'reports', icon: PhChartBar, permission: 'reports.view' },
+  { label: 'Staff & branches', to: '/staff', section: 'staff', icon: PhUsers, permission: 'staff.view' },
+  { label: 'Settings', to: '/settings', section: 'settings', icon: PhGear, anyPermission: ['company.manage', 'loan_products.manage'] },
+].filter((item) => item.permission ? auth.can(item.permission) : auth.canAny(item.anyPermission)))
 const title = computed(() => route.meta.title || 'Kopa')
 const initials = computed(() => (auth.user?.name || 'K').split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase())
 const accountMenu = ref(null)
@@ -110,13 +110,13 @@ onBeforeUnmount(() => { document.removeEventListener('click', onDocumentClick); 
           </button>
           <div v-if="accountOpen" class="account-popover">
             <div><strong>{{ auth.user?.name }}</strong><small>{{ auth.user?.email }}</small></div>
-            <RouterLink to="/settings" @click="accountOpen = false"><PhGear :size="17" />Settings</RouterLink>
+            <RouterLink v-if="auth.canAny(['company.manage', 'loan_products.manage'])" to="/settings" @click="accountOpen = false"><PhGear :size="17" />Settings</RouterLink>
             <button @click="logout"><PhSignOut :size="17" />Sign out</button>
           </div>
         </div>
       </header>
       <main id="main-content" class="main-content" tabindex="-1">
-        <div class="page-heading"><div><p class="breadcrumb">{{ auth.tenant?.name || 'Kopa' }}</p><h1 class="page-title">{{ title }}</h1></div><RouterLink v-if="route.name === 'loans'" to="/loans/new" class="btn-primary"><PhPlus :size="17"/>New loan</RouterLink></div>
+        <div class="page-heading"><div><p class="breadcrumb">{{ auth.tenant?.name || 'Kopa' }}</p><h1 class="page-title">{{ title }}</h1></div><RouterLink v-if="route.name === 'loans' && auth.can('loans.manage')" to="/loans/new" class="btn-primary"><PhPlus :size="17"/>New loan</RouterLink></div>
         <RouterView />
       </main>
     </div>

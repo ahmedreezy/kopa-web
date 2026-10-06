@@ -6,7 +6,7 @@ import LoanProductsPanel from '../components/LoanProductsPanel.vue'
 import api from '../services/api'
 
 const auth = useAuthStore()
-const activeTab = ref('company')
+const activeTab = ref(auth.can('company.manage') ? 'company' : 'products')
 const loading = ref(true)
 const saving = ref(false)
 const error = ref('')
@@ -36,14 +36,14 @@ async function save() {
   } catch (e) { error.value = Object.values(e.response?.data?.errors || {})[0]?.[0] || e.response?.data?.message || 'Settings could not be saved.' }
   finally { saving.value = false }
 }
-onMounted(load)
+onMounted(() => { if (auth.can('company.manage')) load() })
 </script>
 
 <template>
   <div class="settings-workspace">
     <nav class="section-tabs" aria-label="Settings sections">
-      <button :class="{ active: activeTab === 'company' }" @click="activeTab = 'company'"><PhBuildings :size="18"/>Company & compliance</button>
-      <button :class="{ active: activeTab === 'products' }" @click="activeTab = 'products'"><PhScales :size="18"/>Loan products</button>
+      <button v-if="auth.can('company.manage')" :class="{ active: activeTab === 'company' }" @click="activeTab = 'company'"><PhBuildings :size="18"/>Company & compliance</button>
+      <button v-if="auth.can('loan_products.manage')" :class="{ active: activeTab === 'products' }" @click="activeTab = 'products'"><PhScales :size="18"/>Loan products</button>
     </nav>
     <LoanProductsPanel v-if="activeTab === 'products'"/>
     <section v-else class="premium-panel overflow-hidden">
